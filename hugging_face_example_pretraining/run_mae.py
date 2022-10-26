@@ -36,8 +36,8 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
-
-
+import wandb
+wandb.init(project="hugging_face_vitmae_test", entity="changlab")
 """ Pre-training a 🤗 ViT model as an MAE (masked autoencoder), as proposed in https://arxiv.org/abs/2111.06377."""
 
 logger = logging.getLogger(__name__)
