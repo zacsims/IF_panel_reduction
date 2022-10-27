@@ -1,10 +1,12 @@
 # For Benchmarking ViTMAE
 
 [Example homepage](https://github.com/huggingface/transformers/tree/main/examples/pytorch/image-pretraining)
+
 You must install the Hugging Face Transformers library from source: 
 
 ```
 pip install git+https://github.com/huggingface/transformers
+
 ```
 
 You can run the model with the following command:
@@ -34,4 +36,8 @@ python run_mae.py \
     --save_total_limit 3 \
     --seed 1337 \
     --report_to "wandb"
+
 ```
+
+[A notebook with a helpful example of visualizing reconstruction](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/ViTMAE/ViT_MAE_visualization_demo.ipynb)
+
