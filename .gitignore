@@ -1,5 +1,6 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
-wandb
+training/wandb
+training/hugging_face_example_pretraining
 __pycache__
 data
