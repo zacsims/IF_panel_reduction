@@ -71,7 +71,7 @@ class IF_MAE(pl.LightningModule):
         
         
 if __name__ == '__main__':
-    data_dir='/home/groups/ChangLab/simsz/panel_reduction/hugging_face_example_pretraining/data/train/TMA4-CellTilesTiled'
+    data_dir='/home/groups/ChangLab/simsz/panel_reduction/data/train/TMA4-CellTilesTiled'
     files = [f'{data_dir}/{f}' for f in os.listdir(data_dir)]
     
     split = round(len(files) * 0.9)

@@ -15,7 +15,8 @@
 - [Self-distillation Augmented Masked Autoencoders for Histopathological Image Classification](https://arxiv.or/pdf/2203.16983.pdf)
 - [Multi-modal Masked Autoencoders Learn Compositional Histopathological Representations](https://arxiv.org/pdf/2209.01534.pdf)
 - [Global Contrast Masked Autoencoders Are Powerful Pathological Representation Learners](https://arxiv.org/pdf/2205.09048.pdf)
-
+- [ViTGAN: Training GANs with Vision Transformers](https://arxiv.org/pdf/2107.04589.pdf)
+- [Autoencoding beyond pixels using a learned similarity metric](https://arxiv.org/pdf/1512.09300.pdf)
 
 
 ### Code:
