@@ -134,12 +134,12 @@ if __name__ == '__main__':
     train_loader = DataLoader(train_data, 
                               batch_size=BATCH_SIZE, 
                               shuffle=True, 
-                              num_workers=8,
+                              num_workers=2,
                               persistent_workers=True,
                               pin_memory=True)
     val_loader = DataLoader(val_data,
                             batch_size=BATCH_SIZE,
-                            num_workers=8,
+                            num_workers=2,
                             persistent_workers=True,
                             pin_memory=True)
     

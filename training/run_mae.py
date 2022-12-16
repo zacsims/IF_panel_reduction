@@ -28,13 +28,14 @@ class SingleCellDataset(Dataset):
         tensor = torch.from_numpy(img)
         tensor = tensor.unsqueeze(0)
         tensor = tensor.float()
-
+        tensor /= 255.
         return tensor
     
     
 class IF_MAE(pl.LightningModule):
     def __init__(self):
         super().__init__()
+        self.save_hyperparameters()
         self.mae =  MAE(encoder = ViT(image_size=160,
                                       patch_size=32,
                                       num_classes=1000,
@@ -43,7 +44,7 @@ class IF_MAE(pl.LightningModule):
                                       heads=8,
                                       channels=1,
                                       mlp_dim=2048),
-                        masking_ratio = 0.75,    # the paper recommended 75% masked patches
+                        masking_ratio = 0.5,    # the paper recommended 75% masked patches
                         decoder_dim = 512,       # paper showed good results with just 512
                         decoder_depth = 6)       # anywhere from 1 to 8
         
@@ -62,12 +63,22 @@ class IF_MAE(pl.LightningModule):
         return loss
     
     def validation_step(self, val_batch, batch_idx):
-        masked_patches, pred_pixel_values = self.mae(val_batch)
-        loss = F.mse_loss(pred_pixel_values, masked_patches)
-        ssim_val = ssim(rearrange(masked_patches, 'b p (p1 p2) -> 1 (b p) p1 p2', p1=32, p2=32), 
-                        rearrange(pred_pixel_values, 'b p (p1 p2) -> 1 (b p) p1 p2', p1=32, p2=32))
+        real, fake = self.mae(val_batch)
+        loss = F.mse_loss(fake, real)
+        #reshape to BxCxHxW
+        real = rearrange(real, 'b c (h w) -> b c h w', h=32)
+        fake = rearrange(fake, 'b c (h w) -> b c h w', h=32)
+        #calculate mean intensities
+        mean_int = torch.mean(real, dim=(2,3))
+        pred_mean_int = torch.mean(fake, dim=(2,3))
+        #calculate mean spearman correlation across reconstructed markers
+        corr = torch.mean(spearman(pred_mean_int, mean_int))
+        #get ssim
+        ssim_score = ssim(real, fake)
+        #log
+        self.log('val_ssim', ssim_score, sync_dist=True)
+        self.log('val_corr', corr, sync_dist=True)
         self.log('val_loss', loss, sync_dist=True)
-        self.log('val_ssim', ssim_val, sync_dist=True)
         
         
 if __name__ == '__main__':
@@ -95,12 +106,14 @@ if __name__ == '__main__':
                             pin_memory=True)
     
     wandb_logger = WandbLogger(project="pt_mae", entity='changlab')
+    pl.seed_everything(69, workers=True)
     model = IF_MAE()
     trainer = pl.Trainer(accelerator='gpu',
                          devices=8,
                          logger=wandb_logger,
-                         max_epochs=100,
-                         num_sanity_val_steps=0 )
+                         max_epochs=150,
+                         num_sanity_val_steps=0,
+                         deterministic=True)
     trainer.fit(model, train_loader, val_loader)
 
     

@@ -22,3 +22,4 @@
 ### Code:
 - [Hugging Face ViTMAE](https://huggingface.co/docs/transformers/model_doc/vit_mae)
 - [Pytorch ViT implementations](https://github.com/lucidrains/vit-pytorch)
+- [ViTGAN implementation](https://github.com/wilile26811249/ViTGAN)
