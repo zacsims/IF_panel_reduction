@@ -8,12 +8,10 @@ from torchmetrics.functional import structural_similarity_index_measure as ssim
 from torchmetrics.functional import spearman_corrcoef as spearman
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-from mae import MAE
-from vit_pytorch.vit import ViT
+from attention_guided_mae import MAE, ViT
 from einops import repeat, rearrange
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
-
 
 
 class SingleCellDataset(Dataset):
@@ -30,13 +28,13 @@ class SingleCellDataset(Dataset):
         tensor = tensor.unsqueeze(0)
         tensor = tensor.float()
         #tensor /= 255.
+
         return tensor
     
     
 class IF_MAE(pl.LightningModule):
     def __init__(self):
         super().__init__()
-        self.save_hyperparameters()
         self.mae =  MAE(encoder = ViT(image_size=160,
                                       patch_size=32,
                                       num_classes=1000,
@@ -48,10 +46,21 @@ class IF_MAE(pl.LightningModule):
                         masking_ratio = 0.75,    # the paper recommended 75% masked patches
                         decoder_dim = 512,       # paper showed good results with just 512
                         decoder_depth = 6)       # anywhere from 1 to 8
+        self.save_hyperparameters()
         
-    def forward(self, x, masked_patch_idx):
-        masked_patches, pred_pixel_values = self.mae(x, masked_patch_idx=masked_patch_idx)
-        return pred_pixel_values
+    def forward(self, x, masked_patch_idx=None, mask_with_attention=False, return_attention=False, mask_after_attention=False):
+        if return_attention or mask_with_attention:
+            masked_patches, pred_pixel_values, attn_map= self.mae(x, 
+                                                                  masked_patch_idx=masked_patch_idx,
+                                                                  mask_with_attention=mask_with_attention,
+                                                                  return_attention=return_attention,
+                                                                  mask_after_attention=mask_after_attention)
+            return masked_patches, pred_pixel_values, attn_map
+        
+        masked_patches, pred_pixel_values = self.mae(x, 
+                                                     masked_patch_idx=masked_patch_idx,
+                                                     mask_after_attention=mask_after_attention)
+        return masked_patches, pred_pixel_values
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
@@ -64,64 +73,19 @@ class IF_MAE(pl.LightningModule):
         return loss
     
     def validation_step(self, val_batch, batch_idx):
-        real, fake = self.mae(val_batch)
-        loss = F.mse_loss(fake, real)
+        orig, preds = self.mae(val_batch)
+        loss = F.mse_loss(preds, orig)
         #reshape to BxCxHxW
-        real = rearrange(real, 'b c (h w) -> b c h w', h=32)
-        fake = rearrange(fake, 'b c (h w) -> b c h w', h=32)
+        preds = rearrange(preds, 'b c (h w) -> b c h w', h=32)
+        orig = rearrange(orig, 'b c (h w) -> b c h w', h=32)
         #calculate mean intensities
-        mean_int = torch.mean(real, dim=(2,3))
-        pred_mean_int = torch.mean(fake, dim=(2,3))
+        mean_int = torch.mean(orig, dim=(2,3))
+        pred_mean_int = torch.mean(preds, dim=(2,3))
         #calculate mean spearman correlation across reconstructed markers
         corr = torch.mean(spearman(pred_mean_int, mean_int))
         #get ssim
-        ssim_score = ssim(real, fake)
+        ssim_score = ssim(orig, preds)
         #log
+        self.log('val_loss', loss, sync_dist=True)
         self.log('val_ssim', ssim_score, sync_dist=True)
         self.log('val_corr', corr, sync_dist=True)
-        self.log('val_loss', loss, sync_dist=True)
-        
-        
-if __name__ == '__main__':
-    torch.set_num_threads(32)
-    data_dir='/home/groups/ChangLab/simsz/panel_reduction/data/train/TMA4-CellTilesTiled'
-    files = [f'{data_dir}/{f}' for f in os.listdir(data_dir)]
-    
-    split = round(len(files) * 0.9)
-    train_files = files[:split]
-    val_files = files [split:]
-    
-    train_data = SingleCellDataset(train_files)
-    val_data = SingleCellDataset(val_files)
-    
-    BATCH_SIZE = 512
-    train_loader = DataLoader(train_data, 
-                              batch_size=BATCH_SIZE, 
-                              shuffle=True, 
-                              num_workers=1,
-                              persistent_workers=True,
-                              pin_memory=True)
-    val_loader = DataLoader(val_data,
-                            batch_size=BATCH_SIZE,
-                            num_workers=1,
-                            persistent_workers=True,
-                            pin_memory=True)
-                            
-    
-    wandb_logger = WandbLogger(project="pt_mae", entity='changlab', resume='allow')
-    pl.seed_everything(69, workers=True)
-    torch.set_float32_matmul_precision('high')
-    model = IF_MAE()
-    trainer = pl.Trainer(accelerator='gpu',
-                         devices=8,
-                         logger=wandb_logger,
-                         max_epochs=150,
-                         num_sanity_val_steps=0,
-                         deterministic=True,
-                         strategy='ddp')
-    trainer.fit(model, train_loader, val_loader)
-
-    
-    
-    
-    

@@ -17,7 +17,7 @@
 - [Global Contrast Masked Autoencoders Are Powerful Pathological Representation Learners](https://arxiv.org/pdf/2205.09048.pdf)
 - [ViTGAN: Training GANs with Vision Transformers](https://arxiv.org/pdf/2107.04589.pdf)
 - [Autoencoding beyond pixels using a learned similarity metric](https://arxiv.org/pdf/1512.09300.pdf)
-
+- [What to Hide from Your Students: Attention-Guided Masked Image Modeling](https://arxiv.org/pdf/2203.12719.pdf)
 
 ### Code:
 - [Hugging Face ViTMAE](https://huggingface.co/docs/transformers/model_doc/vit_mae)

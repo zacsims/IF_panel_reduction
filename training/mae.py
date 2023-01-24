@@ -41,8 +41,10 @@ class MAE(nn.Module):
         patches = self.to_patch(img)
         batch, num_patches, *_ = patches.shape
 
-        # patch to encoder tokens and add positions
+        # patch to encoder tokens
         tokens = self.patch_to_emb(patches)
+
+        #add positions
         tokens = tokens + self.encoder.pos_embedding[:, 1:(num_patches + 1)]
 
         # calculate of patches needed to be masked, and get random indices, dividing it up for mask vs unmasked
@@ -64,8 +66,16 @@ class MAE(nn.Module):
         # get the patches to be masked for the final reconstruction loss
         masked_patches = patches[batch_range, masked_indices]
 
+        #add cls tokens
+        cls_tokens = repeat(self.encoder.cls_token, '1 1 d -> b 1 d', b = batch)
+        cls_tokens = cls_tokens + self.encoder.pos_embedding[:, 0] #add position embedding to cls tokens
+        tokens = torch.cat((cls_tokens, tokens), dim=1)
+
         # attend with vision transformer
         encoded_tokens = self.encoder.transformer(tokens)
+
+        #remove cls tokens
+        encoded_tokens = encoded_tokens[:,1:]
 
         # project encoder to decoder dimensions, if they are not equal - the paper says you can get away with a smaller dimension for decoder
         decoder_tokens = self.enc_to_dec(encoded_tokens)
@@ -88,3 +98,20 @@ class MAE(nn.Module):
         pred_pixel_values = self.to_pixels(mask_tokens)
 
         return masked_patches, pred_pixel_values
+
+
+if __name__ == '__main__':
+    from vit_pytorch import ViT
+    x = torch.rand(2,1,160,160,)
+    mae = MAE(encoder = ViT(image_size=160,
+                              patch_size=32,
+                              num_classes=1000,
+                              dim=1024,
+                              depth=6,
+                              heads=8,
+                              channels=1,
+                              mlp_dim=2048),
+                masking_ratio = 0.75,    # the paper recommended 75% masked patches
+                decoder_dim = 512,       # paper showed good results with just 512
+                decoder_depth = 6)   
+    mae(x)
