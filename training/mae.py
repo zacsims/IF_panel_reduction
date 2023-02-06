@@ -74,27 +74,33 @@ class MAE(nn.Module):
         # attend with vision transformer
         encoded_tokens = self.encoder.transformer(tokens)
 
-        #remove cls tokens
-        encoded_tokens = encoded_tokens[:,1:]
-
         # project encoder to decoder dimensions, if they are not equal - the paper says you can get away with a smaller dimension for decoder
         decoder_tokens = self.enc_to_dec(encoded_tokens)
 
+        #temporarily remove cls tokens
+        cls_tokens = decoder_tokens[:,0]
+        decoder_tokens = decoder_tokens[:,1:]
+
         # reapply decoder position embedding to unmasked tokens
-        unmasked_decoder_tokens = decoder_tokens + self.decoder_pos_emb(unmasked_indices)
+        unmasked_decoder_tokens = decoder_tokens + self.decoder_pos_emb(unmasked_indices+1) #plus 1 to account for cls token being index 0
 
         # repeat mask tokens for number of masked, and add the positions using the masked indices derived above
-        mask_tokens = repeat(self.mask_token, 'd -> b n d', b = batch, n = num_masked)
-        mask_tokens = mask_tokens + self.decoder_pos_emb(masked_indices)
+        mask_tokens = repeat(self.mask_token, 'd -> b n d', b=batch, n=num_masked)
+        mask_tokens = mask_tokens + self.decoder_pos_emb(masked_indices+1)
+
+        #add position embedding to cls tokens
+        cls_indices = torch.zeros((batch,1), dtype=torch.int64, device=device)
+        cls_tokens = cls_tokens.unsqueeze(axis=1) + self.decoder_pos_emb(cls_indices)
 
         # concat the masked tokens to the decoder tokens and attend with decoder
-        decoder_tokens = torch.zeros(batch, num_patches, self.decoder_dim, device=device)
-        decoder_tokens[batch_range, unmasked_indices] = unmasked_decoder_tokens
-        decoder_tokens[batch_range, masked_indices] = mask_tokens
+        decoder_tokens = torch.zeros(batch, num_patches+1, self.decoder_dim, device=device)
+        decoder_tokens[batch_range, unmasked_indices+1] = unmasked_decoder_tokens
+        decoder_tokens[batch_range, masked_indices+1] = mask_tokens
+        decoder_tokens[batch_range, cls_indices] = cls_tokens
         decoded_tokens = self.decoder(decoder_tokens)
 
         # splice out the mask tokens and project to pixel values
-        mask_tokens = decoded_tokens[batch_range, masked_indices]
+        mask_tokens = decoded_tokens[batch_range, masked_indices+1]
         pred_pixel_values = self.to_pixels(mask_tokens)
 
         return masked_patches, pred_pixel_values
