@@ -24,7 +24,7 @@ Multiplex Tissue Imaging (MTI) has emerged as a powerful set of techniques that 
 - [ViTGAN: Training GANs with Vision Transformers](https://arxiv.org/pdf/2107.04589.pdf)
 - [Autoencoding beyond pixels using a learned similarity metric](https://arxiv.org/pdf/1512.09300.pdf)
 - [MAEDAY: MAE for few and zero shot AnomalY-Detection](https://arxiv.org/pdf/2211.14307v1.pdf)
-- [Scale-MAE: A Scale-Aware Masked Autoencoder for Multiscale Geospatial Representation Learning]https://arxiv.orgpdf/2212.14532v2.pdf)
+- [Scale-MAE: A Scale-Aware Masked Autoencoder for Multiscale Geospatial Representation Learning](https://arxiv.orgpdf/2212.14532v2.pdf)
 - [Label Mask AutoEncoder(L-MAE): A Pure Transformer Method to Augment Semantic Segmentation Datasets](https://arxiv.org/pdf/2211.11242v1.pdf)
 - [ConvMAE: Masked Convolution Meets Masked Autoencoders](https://arxiv.org/pdf/2205.03892v2.pdf)
 - [GD-MAE: Generative Decoder for MAE Pre-training on LiDAR Point Clouds](https://arxiv.org/pdf/2212.03010v2.pdf)
