@@ -1,6 +1,6 @@
 # A Masked Image Modelling Approach to Multiplex Tissue Imaging Panel Reduction
 
-![IF-MAE](mae_architecture.jpg "IF-MAE Architecture")
+![IF-MAE](/src/mae_architecture.jpg "IF-MAE Architecture")
 
 ## Abstract:
 Multiplex Tissue Imaging (MTI) has emerged as a powerful set of techniques that can increase the amount of information captured within a single tissue section by allowing visualization and quantification of the spatially resolved expression of various protein markers. These techniques, however, are limited in panel size due to technical artifacts, tissue loss, and long acquisition time. Using a masked image modeling approach, a reduced set of biomarkers from a cyclic immunofluorescence (CyCIF) panel in breast cancer tissue microarrays is shown to be able to reliably reconstruct an expanded marker panel that retains a sufficient amount of information from the full original panel that would be necessary for downstream analysis, thereby overcoming the limitations of conducting MTI panels. This work shows significant performance improvement over previous attempts by using a transformer-based deep learning model and adopting the self-supervised training objective of reconstructing full marker panel images cropped at the single-cell level after masking a random subset of marker channels. After training, it is then possible to probe the model to discover an optimal reduced marker panel that, along with the trained model, can be used as a substitute for the full marker panel.
