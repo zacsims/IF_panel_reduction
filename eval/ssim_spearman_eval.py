@@ -12,8 +12,6 @@ def ssim_corr_eval(ims, masked, preds):
 
     #reconstruct cell nucleus mask by binarizing dapi channel
     dapi_mask = ims_unpatched[:,0].clone()
-    dapi_mask = ims_unpatched[:,0].clone()
-    dapi_mask = ims_unpatched[:,0].clone()
     dapi_mask[dapi_mask > 0] = 1
     #set zero values to nan so marker intensity inside cell boundary can easily be calculated with nanmean
     dapi_mask[dapi_mask == 0] = np.nan
