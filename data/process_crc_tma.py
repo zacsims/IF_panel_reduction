@@ -138,7 +138,8 @@ keep_channels = ["DAPI"] + [ch for ch in channels if ch != "Control" and not ch.
 keep_channels_idx = [i for i,ch in enumerate(channels) if ch in keep_channels]
 ch2idx = {ch:i for i,ch in enumerate(keep_channels)}
     
-data_dir = '/home/groups/ChangLab/dataset/CRC-TNP-TMA/'
+data_dir = '/home/groups/ChangLab/dataset/CRC-TNP-TMA'
+mask_dir = '/home/groups/ChangLab/simsz/panel_reduction/data/crc_tma_masks'
 save_dir = '/var/local/ChangLab/panel_reduction/CRC-TMA-2'
 mask_save_dir = '/var/local/ChangLab/panel_reduction/CRC-TMA-2-cell-masks'
 
@@ -146,8 +147,8 @@ mask_save_dir = '/var/local/ChangLab/panel_reduction/CRC-TMA-2-cell-masks'
 cores_ = []
 fnames_ = []
 print('loading cores...')
-for f in tqdm(os.listdir('/home/groups/ChangLab/dataset/CRC-TNP-TMA')):
-    core = imread(f'/home/groups/ChangLab/dataset/CRC-TNP-TMA/{f}')
+for f in tqdm(os.listdir(data_dir)):
+    core = imread(f'{data_dir}/{f}')
     if core.shape == (36, 1400, 1400): #there is 1 random core that has a different shape
         cores_.append(core[keep_channels_idx])
         fnames_.append(f)
@@ -170,7 +171,7 @@ shape_statistics = {}
 for fname, core in tqdm(zip(fnames, cores)):
     sample_name = fname.split('.')[0]
     
-    cell_mask = imread(f'/home/groups/ChangLab/simsz/panel_reduction/data/crc_tma_masks/{sample_name}-mask.tif')
+    cell_mask = imread(f'{mask_dir}/{sample_name}-mask.tif')
     pad = ((0,), (16,), (16,)) #pad 2nd and 3rd channels with 16 pixels
     core, cell_mask = np.pad(core, pad), np.pad(cell_mask, 16)
 
