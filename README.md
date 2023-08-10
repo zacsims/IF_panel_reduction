@@ -18,5 +18,8 @@ To access the CRC-TMA dataset, the easiest way is to go through the [Cancer Geno
 9. at the top, next to the "Download" button, select the black arrow pointing down and click "Get download links"
 10. Click the green button that says "Download link"	11. in your downloads folder you should now have a file named "download-links.txt", to download, navigate to your Downloads directory in a terminal (`cd Downloads`), then enter `wget -i download-links.txt` to begin the download.
 12. the f;ilenames will have a large amount of characters that come after the .ome.tif extension that needs to be removed, so you can do so by first creating a new directory and moving the files to that directory like so: `mkdir CRC-TMA`, then `mv HTMA4* CRC-TMA/` and finally, `find . -name '*.ome.tif*' -exec bash -c 'mv "$0" "${0%%ome.tif*}ome.tif"' {} \;`.
-	
+## create single-cell data
+One you have downloaded the cores, you can begin running the scripts to process the data into individual singe-cells. 
+1. the first script is the segmentation script: `data/segment_crc_tma.py`. Before running, you will need to update the `data_dir` directory to the directory you saved the TMA cores in, and update the `save_dir` directory to wherever you would like the segmentation masks for each core to be saved.
+2. next you can run the processing script `data/process_crc_tma.py`. again you will first have to update the `data_dir` variable to point to the TMA cores, the `mask_dir` variable to be where you saved the segmentation masks, `save_dir` to be where you would like the single-cell images to be stored, and `mask_save_dir` to be where the single-cell masks are saved.	
 	
