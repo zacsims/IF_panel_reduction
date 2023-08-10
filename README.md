@@ -5,7 +5,7 @@
 
 This is the repository that contains all code necessary to replicate the figures and experiments in the paper "PRIME: Panel Reduction and Imputation through Masked imaging modeling for Enhancing Cyclic Immunofluorescence (CyCIF)". 
 
-# Dataset Access and construction
+# Dataset Access and Construction
 ## Data Download
 To access the CRC-TMA dataset, the easiest way is to go through the [Cancer Genomics Cloud](https://cgc-accounts.sbgenomics.com). To do so, follow these steps:
 1. Login or create an account
@@ -28,4 +28,10 @@ One you have downloaded the cores, you can begin running the scripts to process 
 The model training script for the implementation described in the paper is `training/run_mae.py`, and the model implementation is in `training/mae.py`. Before running you will need to update the `data_dir` variable to point to the directory containing the single-cell images. Note that you do not need to train a model yourself to replicate our experiments since we provide model checkpoints in `eval/ckpts`. A seperate training script for cross-validation is provided.	
 
 ## Model Evaluation
-All model evaluation is done inside of the notebooks in the `eval` directory. Prior to running these notebooks, you will need to update the `data_dir` variable in `eval/data.py` to point to the correct directory on your machine. 
+All model evaluation is done inside of the notebooks in the `eval` directory. Prior to running these notebooks, you will need to update the `data_dir` variable in `eval/data.py` to point to the correct directory on your machine containing the single cell images and also update the `dir_` variable in `eval/intensity.py` to point to the directory of the single cell segmentation masks . All models were evaluated using a single Nvidia A40 GPU but should be runnable on any machine by adjusting the `device` and `BATCH_SIZE` variables at the top of each notebook. The corresponding notebook that generates each figure in the paper is as follows:
+- Figure 1B: `MAE Figures - RGB reconstructions.ipynb`
+- Figures 2A,2C, and Supplementary Figure 1: `mean intensity spearman correlation.ipynb` 
+- Figures 2B and Supplementary Figure 6: `MAE Figures - comparison to ME-VAE.ipynb`
+- Supplementary Figures 1,2, and 3: `mean intensity spearman correlation-CRC.ipynb`
+- Supplementary Figure 4: `MAE Figures - CRC Cross Validation.ipynb`
+

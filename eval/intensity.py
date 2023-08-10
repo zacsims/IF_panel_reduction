@@ -22,6 +22,7 @@ def get_mints(unmasked, gt, preds, fnames, device):
             fname = fname.replace('.tif', '-mask.tif')
             dir_ = '/var/local/ChangLab/panel_reduction/CRC-WSI-cell-masks'
             if 'TMA' in fname:
+                #update to point to directory of CRC-TMA single-cell masks
                 dir_ = '/var/local/ChangLab/panel_reduction/CRC-TMA-2-cell-masks'           
             mask[i] = torch.tensor(imread(f'{dir_}/{fname}'), device=device)[:,:,0]
         

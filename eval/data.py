@@ -9,6 +9,7 @@ def get_data(tissue_type, BATCH_SIZE):
     if tissue_type == 'BC':
         data_dir= '/var/local/ChangLab/panel_reduction/TMA4-CellTiles'
     elif tissue_type == 'CRC-TMA':
+        #update this variable when constructing your own CRC-TMA dataset
         data_dir = '/var/local/ChangLab/panel_reduction/CRC-TMA-2'
     elif tissue_type == 'CRC-WSI':
         data_dir = '/var/local/ChangLab/panel_reduction/CRC-WSI'
@@ -20,7 +21,6 @@ def get_data(tissue_type, BATCH_SIZE):
     val_files = val_files[int(len(val_files)/2):]
     val_data = SingleCellDataset(val_files)
     if tissue_type == 'CRC-WSI':
-        #val_data = SingleCellDataset(files[:100000])
         val_data = SingleCellDataset(files)
     
     #only load files with cells that are within ROIs adjacent to TMA punchouts
@@ -47,7 +47,6 @@ class SingleCellDataset(Dataset):
     def __getitem__(self, idx):
         filepath = self.img_files[idx]
         im = imread(filepath)
-        #im = np.concatenate([np.concatenate([im[:,:,ch] for ch in range(i, i+5)], axis=1)  for i in range(0,21,5)], axis=0)
         num_channels = im.shape[-1]
         step_size = int(np.sqrt(num_channels))
         im = np.concatenate([np.concatenate([im[:,:,ch] for ch in range(i, i+step_size)], axis=1)  for i in range(0,num_channels-step_size+1,step_size)], axis=0)
