@@ -8,24 +8,6 @@ from mask_refinement import refine_masks
 
 
 #####################################################################################
-
-'''
-#CRC TMA channel order
-channels = ["DAPI", "Control", "Control", "Control",
-            "DAPI_2", "CD3", "NaKATPase", "CD45RO",
-            "DAPI_3", "Ki67_1", "PanCK", "aSMA",
-            "DAPI_4", "CD4", "CD45", "PD-1",
-            "DAPI_5", "CD20", "CD68", "CD8a",
-            "DAPI_6", "CD163", "FOXP3", "PD-L1",
-            "DAPI_7", "ECad", "Vimentin", "CDX2",
-            "DAPI_8", "LaminABC", "Desmin", "CD31",
-            "DAPI_9", "PCNA", "Ki67_2", "Collagen IV"]
-
-#order of 17 channel panel to match ORION dataset plus last round dapi to check for retention
-keep_channels = ["DAPI", "CD3", "CD45RO", "Ki67_1", "PanCK", "CD4", "CD45", "PD-1", 
-                 "CD20", "CD68", "CD8a", "CD163", "FOXP3", "PD-L1", "ECad","CD31",
-                 "DAPI_9"]
-'''
 channels = [
     #Round 0
     "DAPI",
@@ -80,15 +62,15 @@ ch2idx = {ch:i for i,ch in enumerate(keep_channels)}
     
 #load mesmer for segmentation
 model = Mesmer()
-data_dir = '/home/groups/ChangLab/dataset/CRC-TNP-TMA/'
+data_dir = '/home/groups/ChangLab/dataset/CRC-TNP-TMA'
 save_dir =  '/home/groups/ChangLab/simsz/panel_reduction/crc_tma_masks'
 
 #load cores and their file names
 cores = []
 fnames = []
 print('loading cores...')
-for f in tqdm(os.listdir('/home/groups/ChangLab/dataset/CRC-TNP-TMA')):
-    core = imread(f'/home/groups/ChangLab/dataset/CRC-TNP-TMA/{f}')
+for f in tqdm(os.listdir(data_dir)):
+    core = imread(f'{data_dir}/{f}')
     if core.shape == (36, 1400, 1400): #there is 1 random core that has a different shape
         cores.append(core[keep_channels_idx])
         fnames.append(f)
