@@ -4,48 +4,12 @@ import numpy as np
 from mask_refinement import refine_masks
 from skimage.measure import regionprops
 from einops import repeat,rearrange
-import cv2
 import math
 from tqdm import tqdm
 import tifffile
 import os
-
-
-#PREPROCESSING FUNCTIONS (taken from terneslu/PROJECTS/PanelReduction/SingleCellSegmentations.ipynb)
-#rotate 
-def rotateImage(image, angle):
-    row,col,_ = image.shape
-    center=tuple(np.array([row,col])/2)
-    rot_mat = cv2.getRotationMatrix2D(center,angle,1.0)
-    new_image = cv2.warpAffine(image, rot_mat, (col,row))
-    return new_image
-
-def flip_mask(image, mask):
-    #Identify quadrant
-    up_left = np.mean(image[0,:16,:16][image[0,:16,:16]>0])
-    down_left = np.mean(image[0,16:,:16][image[0,16:,:16]>0])
-    up_right = np.mean(image[0,:16,16:][image[0,:16,16:]>0])
-    down_right = np.mean(image[0,16:,16:][image[0,16:,16:]>0])
-    
-    vec = [up_left, down_left, up_right, down_right]
-    index = np.argmax(vec)
-    
-    if index == 0:
-        FlippedImage = image
-        FlippedMask = mask
-    elif index == 1:
-        FlippedImage = np.flipud(image)
-        FlippedMask = np.flipud(mask)
-    elif index == 2:
-        FlippedImage = np.fliplr(image)
-        FlippedMask = np.fliplr(mask)
-    elif index == 3:
-        FlippedImage = np.fliplr(image)
-        FlippedImage = np.flipud(FlippedImage)
-        FlippedMask = np.fliplr(mask)
-        FlippedMask = np.flipud(FlippedMask)
-    
-    return FlippedImage, FlippedMask
+from channel_info import get_channel_info
+from cell_transformations import flip_mask, rotate_image
 
 
 #normalization
@@ -69,60 +33,7 @@ def normalize(wsi):
         
     return output
 
-#####################################################################################
-
-
-channels = [
-    #Round 0
-    "DAPI",
-    "Control",
-    "Control",
-    "Control",
-    #Round 1
-    "DAPI_2",
-    "CD3",
-    "NaKATPase",
-    "CD45RO",
-    #Round 2
-    "DAPI_3",
-    "Ki67",
-    "PanCK",
-    "aSMA",
-    #Round 3
-    "DAPI_4",
-    "CD4",
-    "CD45",
-    "PD-1/CD279",
-    #Round 4
-    "DAPI_5",
-    "CD20",
-    "CD68",
-    "CD8a",
-    #Round 5
-    "DAPI_6",
-    "CD163",
-    "FOXP3",
-    "PD-L1/CD274",
-    #Round 6
-    "DAPI_7",
-    "E-Cadherin",
-    "Vimentin",
-    "CDX2",
-    #Round 7
-    "DAPI_8",
-    "LaminABC",
-    "Desmin",
-    "CD31",
-    #Round 8
-    "DAPI_9",
-    "PCNA",
-    "Ki67",
-    "Collagen IV",
-]
-
-keep_channels = ["DAPI"] + [ch for ch in channels if ch != "Control" and not ch.startswith('DAPI')] + ["DAPI_9"]
-keep_channels_idx = [i for i,ch in enumerate(channels) if ch in keep_channels]
-ch2idx = {ch:i for i,ch in enumerate(keep_channels)}
+keep_channels, keep_channels_idx, ch2idx = get_channel_info('CRC')
 
 data_dir = '/home/groups/ChangLab/dataset/HMS-CRC-WSI'
 save_dir =  '/var/local/ChangLab/panel_reduction/CRC-WSI'
@@ -137,7 +48,7 @@ fname = 'CRC02.ome.tif'
 #print('normalizing wsi...')
 #wsi = normalize(wsi)
 #imsave('crc02_matched_256b.tif', wsi)
-wsi = imread('crc02_matched_256b.tif')
+wsi = imread('crc02_matched.tif')
 
 print(f'extracting cells from wsi')
 sample_name = fname.split('.')[0]
@@ -183,8 +94,8 @@ for rp in tqdm(rps):
     mask = np.moveaxis(mask, 0, 2)
 
     #perform transformations
-    im = rotateImage(im,-math.degrees(rp.orientation))
-    mask = rotateImage(mask, -math.degrees(rp.orientation))
+    im = rotate_image(im,-math.degrees(rp.orientation))
+    mask = rotate_image(mask, -math.degrees(rp.orientation))
     im, mask = flip_mask(im, mask)
 
     #save image
