@@ -27,6 +27,12 @@ One you have downloaded the cores, you can begin running the scripts to process 
 ## Model Training
 The model training script for the implementation described in the paper is `training/run_mae.py`, and the model implementation is in `training/mae.py`. Before running you will need to update the `data_dir` variable to point to the directory containing the single-cell images. Note that you do not need to train a model yourself to replicate our experiments since we provide model checkpoints in `eval/ckpts`. A seperate training script for cross-validation is provided.	
 
+## Panel Selection
+
+The iterative marker selection procedure is done in `eval/Iterative Panel Selection.ipynb`. Running this notebook will produce an ordering of channels that can then be input into other evaluation notebooks later on. 
+
+![IPS] (/src/iterative_selection_ex.gif "Iterative Panel Selection example")
+
 ## Model Evaluation
 All model evaluation is done inside of the notebooks in the `eval` directory. Prior to running these notebooks, you will need to update the `data_dir` variable in `eval/data.py` to point to the correct directory on your machine containing the single cell images and also update the `dir_` variable in `eval/intensity.py` to point to the directory of the single cell segmentation masks . All models were evaluated using a single Nvidia A40 GPU but should be runnable on any machine by adjusting the `device` and `BATCH_SIZE` variables at the top of each notebook. The corresponding notebook that generates each figure in the paper is as follows:
 - Figure 1B: `MAE Figures - RGB reconstructions.ipynb`
