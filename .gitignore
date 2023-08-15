@@ -3,4 +3,3 @@
 training/wandb
 training/hugging_face_example_pretraining
 __pycache__
-data
