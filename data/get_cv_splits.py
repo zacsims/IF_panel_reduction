@@ -1,9 +1,10 @@
 import os
 import pickle
-from tqdm import tqdm
 from skimage.io import imread
+from tqdm import tqdm
 
 def get_cv_splits():
+    '''splits CRC TMA core dataset into 5 cross-validation sets and saves core filenames in picke files'''
     fnames = []
     print('loading cores...')
     outlier_set = [40, 72, 81, 86, 98, 114, 130, 135, 146, 267, 288, 330]

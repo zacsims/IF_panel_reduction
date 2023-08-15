@@ -19,9 +19,7 @@ def normalize(wsi):
     for i,_ in tqdm(enumerate(wsi)):
         
         ch = wsi[i].copy()
-        #min_ = ch.min()
         min_percentile = 1
-        #if i in increase_min: min_percentile = 10
         min_ = np.percentile(ch, min_percentile)
         ch =ch.astype('float') - min_
         ch[ch < 0]=0
@@ -40,19 +38,11 @@ save_dir =  '/var/local/ChangLab/panel_reduction/CRC-WSI'
 mask_save_dir = '/var/local/ChangLab/panel_reduction/CRC-WSI-cell-masks'
 
 sample_name = 'CRC02'
-fname = 'CRC02.ome.tif'
-#wsi = imread(os.path.join(data_dir, fname))
-#wsi = imread('/home/groups/ChangLab/simsz/panel_reduction/data/crc02_matched.tif')
-#wsi = wsi[keep_channels_idx]        
-#normalize
-#print('normalizing wsi...')
-#wsi = normalize(wsi)
-#imsave('crc02_matched_256b.tif', wsi)
 wsi = imread('crc02_matched.tif')
+print('normalizing wsi...')
+wsi = normalize(wsi)
 
 print(f'extracting cells from wsi')
-sample_name = fname.split('.')[0]
-
 cell_mask = imread(os.path.join(data_dir, 'CRC02_mesmer_cell_mask.tif'))
 
 pad = ((0,),(16,), (16,)) #pad 2nd and 3rd dimensions with 16 pixels

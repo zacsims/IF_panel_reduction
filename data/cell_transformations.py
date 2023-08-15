@@ -1,7 +1,10 @@
 import numpy as np
 import cv2
 
-#PREPROCESSING FUNCTIONS (taken from terneslu/PROJECTS/PanelReduction/SingleCellSegmentations.ipynb)
+#PREPROCESSING FUNCTIONS (taken from Ternes et. al. implementation code)
+# These are used in the process_crc_wsi.py and proces_crc_tma.py scripts after cells are cropped and the 
+# background is zeroed out. These are the same functions used to generate the Breast Cancer dataset from Ternes et. al.
+
 #rotate 
 def rotate_image(image, angle):
     row,col,_ = image.shape

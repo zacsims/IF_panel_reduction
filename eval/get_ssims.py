@@ -9,16 +9,19 @@ def get_ssims(model, panel, val_loader, device='cpu'):
     model.mae.masking_ratio = (25-len(panel))/25
 
     with torch.no_grad():
-        ssims= torch.empty(len(val_loader.dataset), device=device)
-
-        for i, (batch, fnames) in enumerate(tqdm(val_loader)):
+        ssims= torch.zeros(len(val_loader.dataset), device='cpu')
+        batch_size = None
+        for i, (batch, _) in enumerate(tqdm(val_loader)):
             batch = batch.to(device)
+            if batch_size is None: batch_size = len(batch)
             masked,preds = model.forward(batch, masked_patch_idx=masked_ch_idx)
             preds = rearrange(preds, 'b c (h w) -> b c h w', h=32)
+            preds[preds < 0] = 0
             masked = rearrange(masked, 'b c (h w) -> b c h w', h=32)
-            ssims_ = ssim(masked, preds)
-            s = i * len(batch)
-            e = s + len(batch)
+            ssims_ = ssim(masked, preds, reduction='none')
+            s = i * batch_size
+            e = s + batch_size
+            ssims_ = ssims_.to('cpu')
             ssims[s:e] = ssims_
 
             del batch
